@@ -1,42 +1,52 @@
 import os
-from urllib.parse import urlparse, urlunparse
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-def _to_asyncpg_url(url: str) -> str:
-    if url.startswith("postgresql+asyncpg://"):
-        return url
-    parsed = urlparse(url)
-    return urlunparse(parsed._replace(scheme="postgresql+asyncpg"))
-
-
 def _build_database_url() -> str:
     if url := os.environ.get("DATABASE_URL"):
-        return _to_asyncpg_url(url)
-
+        return url
     if conn := os.environ.get("POSTGRES_CONNECTION_STRING"):
-        return _to_asyncpg_url(conn)
-
-    user = os.environ.get("POSTGRES_USERNAME")
-    password = os.environ.get("POSTGRES_PASSWORD")
-    host = os.environ.get("POSTGRES_HOST")
-    port = os.environ.get("POSTGRES_PORT", "5432")
-    db = os.environ.get("POSTGRES_DATABASE_NAME")
-    if all([user, password, host, db]):
+        return conn.replace("postgres://", "postgresql+asyncpg://", 1)
+    if all(
+        os.environ.get(k)
+        for k in (
+            "POSTGRES_USERNAME",
+            "POSTGRES_PASSWORD",
+            "POSTGRES_HOST",
+            "POSTGRES_DATABASE_NAME",
+        )
+    ):
+        user = os.environ["POSTGRES_USERNAME"]
+        password = os.environ["POSTGRES_PASSWORD"]
+        host = os.environ["POSTGRES_HOST"]
+        port = os.environ.get("POSTGRES_PORT", "5432")
+        db = os.environ["POSTGRES_DATABASE_NAME"]
         return f"postgresql+asyncpg://{user}:{password}@{host}:{port}/{db}"
-
     return (
         "postgresql+asyncpg://eventprovider:secret@eventprovider-db:5432/eventprovider"
     )
 
 
+def _build_events_provider_url() -> str:
+    if url := os.environ.get("EVENTS_PROVIDER_URL"):
+        return url
+    if os.environ.get("POSTGRES_CONNECTION_STRING"):
+        return (
+            "http://student-system-events-provider-web"
+            ".student-system-events-provider.svc:8000"
+        )
+    return "https://events-provider.dev-2.python-labs.ru"
+
+
 class Settings(BaseSettings):
     app_name: str = "LearnApp"
     database_url: str = _build_database_url()
-
-    events_provider_url: str = "https://events-provider.dev-2.python-labs.ru"
-    events_provider_api_key: str = os.environ.get("EVENTS_PROVIDER_API_KEY", "")
+    events_provider_url: str = _build_events_provider_url()
+    events_provider_api_key: str = os.environ.get(
+        "EVENTS_PROVIDER_API_KEY",
+        "ACjxaLfCG-_dOjNIKhvhA1e_-lPBlwcmnPyV1757QOA",
+    )
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
