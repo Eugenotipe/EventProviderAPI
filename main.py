@@ -5,7 +5,6 @@ from contextlib import asynccontextmanager
 
 import uvicorn
 from fastapi import FastAPI
-from sqlalchemy import text
 
 from config import settings
 from database import Base, engine
@@ -22,25 +21,6 @@ logger = logging.getLogger(__name__)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     async with engine.begin() as conn:
-        await conn.execute(
-            text("""
-                    DO $$
-                    BEGIN
-                        IF EXISTS (
-                            SELECT 1
-                            FROM information_schema.columns
-                            WHERE table_name = 'events'
-                              AND column_name = 'status'
-                              AND data_type = 'USER-DEFINED'
-                        ) THEN
-                            ALTER TABLE events
-                                ALTER COLUMN status TYPE VARCHAR(50)
-                                USING status::text;
-                            DROP TYPE IF EXISTS event_status;
-                        END IF;
-                    END $$;
-                """)
-        )
         await conn.run_sync(Base.metadata.create_all)
 
     task = asyncio.create_task(sync_loop())

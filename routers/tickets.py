@@ -12,7 +12,7 @@ from services.seats_cache import seats_cache
 router = APIRouter(prefix="/api/tickets", tags=["tickets"])
 
 
-@router.post("", include_in_schema=False)
+@router.post("", include_in_schema=False, status_code=status.HTTP_201_CREATED)
 @router.post("/", response_model=TicketCreated, status_code=status.HTTP_201_CREATED)
 async def create_ticket(data: TicketCreate, db: AsyncSession = Depends(get_db)):
     event = await db.get(Event, data.event_id)

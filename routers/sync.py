@@ -22,8 +22,8 @@ async def trigger_sync() -> SyncTriggerResponse:
             message="Sync is already in progress",
         )
 
-    asyncio.create_task(run_sync())
+    result = await run_sync()
     return SyncTriggerResponse(
-        status="started",
-        message="Sync triggered in background",
+        status="completed",
+        message=f"Sync finished: {result}",
     )
