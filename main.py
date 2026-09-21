@@ -2,10 +2,10 @@ import asyncio
 import logging
 import os
 from contextlib import asynccontextmanager
-from sqlalchemy import text
 
 import uvicorn
 from fastapi import FastAPI
+from sqlalchemy import text
 
 from config import settings
 from database import Base, engine
@@ -22,7 +22,8 @@ logger = logging.getLogger(__name__)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     async with engine.begin() as conn:
-        await conn.execute(text("""
+        await conn.execute(
+            text("""
                     DO $$
                     BEGIN
                         IF EXISTS (
@@ -34,7 +35,8 @@ async def lifespan(app: FastAPI):
                                 RENAME COLUMN numer_of_visitors TO number_of_visitors;
                         END IF;
                     END $$;
-                """))
+                """)
+        )
         await conn.run_sync(Base.metadata.create_all)
         await conn.run_sync(Base.metadata.create_all)
 
