@@ -6,3 +6,4 @@ pydantic
 pydantic-settings
 alembic
 python-dotenv
+ruff==0.6.9

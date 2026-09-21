@@ -1,5 +1,6 @@
-from enum import Enum
+from enum import StrEnum
 
-class EventStatus(str, Enum):
-    NEW = 'new'
-    PUBLISHED = 'published'
+
+class EventStatus(StrEnum):
+    NEW = "new"
+    PUBLISHED = "published"
