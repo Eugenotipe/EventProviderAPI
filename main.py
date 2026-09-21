@@ -57,6 +57,7 @@ app.include_router(tickets.router)
 async def read_root():
     return {"message": f"Hello from {settings.app_name}!"}
 
+
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request, exc):
     return JSONResponse(status_code=400, content={"detail": exc.errors()})
