@@ -6,7 +6,28 @@ on:
       - master
 
 jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install Ruff
+        run: pip install ruff==0.6.9
+
+      - name: Run Ruff (lint)
+        run: ruff check .
+
+      - name: Run Ruff (format check)
+        run: ruff format --check .
+
   build:
+    needs: lint
     runs-on: ubuntu-latest
     outputs:
       image: ${{ steps.meta.outputs.tags }}
@@ -43,7 +64,7 @@ jobs:
             type=sha,prefix={{branch}}-
 
       - name: Build and push
-        uses: docker/build-push-action@v7
+        uses: docker/build-push-action@v6
         with:
           context: .
           platforms: linux/arm64,linux/amd64
