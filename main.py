@@ -35,6 +35,10 @@ async def read_root():
         "redoc": "/redoc",
     }
 
+@app.get("/api/health")
+async def health():
+    return {"status": "ok"}
+
 if __name__ == "__main__":
     uvicorn.run("main:app",
                 host=os.environ.get("HOST", "0.0.0.0"),
