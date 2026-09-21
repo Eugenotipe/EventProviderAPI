@@ -11,8 +11,9 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/sync", tags=["sync"])
 
 
+@router.post("/trigger", include_in_schema=False)
 @router.post(
-    "/trigger", response_model=SyncTriggerResponse, status_code=status.HTTP_200_OK
+    "/trigger/", response_model=SyncTriggerResponse, status_code=status.HTTP_200_OK
 )
 async def trigger_sync() -> SyncTriggerResponse:
     if is_sync_running():

@@ -8,11 +8,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from database import get_db
-from models import Event, Place
+from models import Event
 from schemas import (
-    EventCreate,
     EventDetailRead,
-    EventWithPlaceRead,
     PaginatedEventsPage,
     SeatsResponse,
 )
@@ -35,6 +33,7 @@ def _build_page_url(
     return f"{base}?{urlencode(params)}"
 
 
+@router.get("", include_in_schema=False)
 @router.get("/", response_model=PaginatedEventsPage)
 async def list_events(
     request: Request,
@@ -84,7 +83,8 @@ async def list_events(
     )
 
 
-@router.get("/{event_id}", response_model=EventDetailRead)
+@router.get("/{event_id}", include_in_schema=False)
+@router.get("/{event_id}/", response_model=EventDetailRead)
 async def get_event(event_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
     stmt = select(Event).options(selectinload(Event.place)).where(Event.id == event_id)
     event = (await db.execute(stmt)).scalar_one_or_none()
@@ -93,22 +93,7 @@ async def get_event(event_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
     return event
 
 
-@router.post(
-    "/", response_model=EventWithPlaceRead, status_code=status.HTTP_201_CREATED
-)
-async def create_event(data: EventCreate, db: AsyncSession = Depends(get_db)):
-    place = await db.get(Place, data.place_id)
-    if place is None:
-        raise HTTPException(status_code=404, detail="Place not found")
-
-    event = Event(**data.model_dump())
-    db.add(event)
-    await db.commit()
-
-    stmt = select(Event).options(selectinload(Event.place)).where(Event.id == event.id)
-    return (await db.execute(stmt)).scalar_one()
-
-
+@router.get("/{event_id}/seats", include_in_schema=False)
 @router.get("/{event_id}/seats/", response_model=SeatsResponse)
 async def get_event_seats(
     event_id: uuid.UUID,
@@ -123,7 +108,7 @@ async def get_event_seats(
             status_code=status.HTTP_409_CONFLICT,
             detail=(
                 f"Seats are only available for published events "
-                f"(current status: {event.status.value})"
+                f"(current status: {event.status})"
             ),
         )
 

@@ -7,12 +7,14 @@ from database import get_db
 router = APIRouter(prefix="/api/health", tags=["health"])
 
 
+@router.get("", include_in_schema=False)
 @router.get("/", status_code=status.HTTP_200_OK)
 async def health_check():
     return {"status": "ok"}
 
 
-@router.get("/ready", status_code=status.HTTP_200_OK)
+@router.get("/ready", include_in_schema=False)
+@router.get("/ready/", status_code=status.HTTP_200_OK)
 async def readiness_check(db: AsyncSession = Depends(get_db)):
     try:
         await db.execute(text("SELECT 1"))

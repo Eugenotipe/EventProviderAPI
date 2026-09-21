@@ -5,7 +5,6 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 def _to_asyncpg_url(url: str) -> str:
-    """postgres://... → postgresql+asyncpg://... для SQLAlchemy."""
     if url.startswith("postgresql+asyncpg://"):
         return url
     parsed = urlparse(url)

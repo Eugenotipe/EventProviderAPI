@@ -8,7 +8,7 @@ from fastapi import FastAPI
 
 from config import settings
 from database import Base, engine
-from routers import events, health, places, sync, tickets
+from routers import events, health, sync, tickets
 from workers.sync_worker import sync_loop
 
 logging.basicConfig(
@@ -42,13 +42,13 @@ app = FastAPI(
     title=settings.app_name,
     version="0.1.0",
     lifespan=lifespan,
+    redirect_slashes=False,
 )
 
 app.include_router(health.router)
 app.include_router(sync.router)
 app.include_router(events.router)
 app.include_router(tickets.router)
-app.include_router(places.router)
 
 
 @app.get("/", tags=["root"])

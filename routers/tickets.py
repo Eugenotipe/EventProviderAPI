@@ -12,6 +12,7 @@ from services.seats_cache import seats_cache
 router = APIRouter(prefix="/api/tickets", tags=["tickets"])
 
 
+@router.post("", include_in_schema=False)
 @router.post("/", response_model=TicketCreated, status_code=status.HTTP_201_CREATED)
 async def create_ticket(data: TicketCreate, db: AsyncSession = Depends(get_db)):
     event = await db.get(Event, data.event_id)
@@ -21,7 +22,7 @@ async def create_ticket(data: TicketCreate, db: AsyncSession = Depends(get_db)):
     if event.status != "published":
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
-            detail=f"Registration is not available (status: {event.status.value})",
+            detail=f"Registration is not available (status: {event.status})",
         )
 
     from datetime import datetime, timezone
@@ -76,6 +77,7 @@ async def create_ticket(data: TicketCreate, db: AsyncSession = Depends(get_db)):
     return TicketCreated(ticket_id=ticket_uuid)
 
 
+@router.delete("/{ticket_id}", include_in_schema=False)
 @router.delete("/{ticket_id}/", response_model=TicketDeleted)
 async def delete_ticket(ticket_id: uuid.UUID, db: AsyncSession = Depends(get_db)):
     ticket = await db.get(Ticket, ticket_id)
