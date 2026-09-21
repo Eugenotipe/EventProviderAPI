@@ -1,0 +1,68 @@
+# ---------- Python ----------
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# ---------- Виртуальные окружения ----------
+.venv/
+venv/
+ENV/
+env/
+.python-version
+
+# ---------- Тесты и кэш ----------
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+
+# ---------- IDE ----------
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# ---------- Секреты и окружение ----------
+.env
+.env.local
+.env.*.local
+
+# ---------- Docker ----------
+*.pid
+*.seed
+*.pid.lock
+
+# ---------- Логи ----------
+*.log
+logs/
+
+# ---------- OS ----------
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ---------- Прочее ----------
+.cache/
+*.bak
