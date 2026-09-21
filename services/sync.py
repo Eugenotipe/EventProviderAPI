@@ -103,9 +103,6 @@ async def _upsert_events(db: AsyncSession, events: list[dict]) -> None:
     await db.execute(stmt)
 
 
-# ---------- Основная функция ----------
-
-
 async def _do_sync() -> dict:
     async with AsyncSessionLocal() as db:
         state = await _get_or_create_state(db)
@@ -142,9 +139,12 @@ async def _do_sync() -> dict:
             return {"status": "success", "events_synced": len(events)}
 
         except Exception as e:
-            state.sync_status = SyncStatus.FAILED
-            state.last_error = str(e)[:1000]
-            await db.commit()
+            await db.rollback()
+            state = await db.get(SyncState, 1)
+            if state is not None:
+                state.sync_status = SyncStatus.FAILED
+                state.last_error = str(e)[:1000]
+                await db.commit()
             logger.exception("Sync failed")
             raise
 

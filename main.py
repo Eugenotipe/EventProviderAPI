@@ -27,17 +27,20 @@ async def lifespan(app: FastAPI):
                     DO $$
                     BEGIN
                         IF EXISTS (
-                            SELECT 1 FROM information_schema.columns
+                            SELECT 1
+                            FROM information_schema.columns
                             WHERE table_name = 'events'
-                              AND column_name = 'numer_of_visitors'
+                              AND column_name = 'status'
+                              AND data_type = 'USER-DEFINED'
                         ) THEN
                             ALTER TABLE events
-                                RENAME COLUMN numer_of_visitors TO number_of_visitors;
+                                ALTER COLUMN status TYPE VARCHAR(50)
+                                USING status::text;
+                            DROP TYPE IF EXISTS event_status;
                         END IF;
                     END $$;
                 """)
         )
-        await conn.run_sync(Base.metadata.create_all)
         await conn.run_sync(Base.metadata.create_all)
 
     task = asyncio.create_task(sync_loop())
