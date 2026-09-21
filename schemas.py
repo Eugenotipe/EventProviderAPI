@@ -2,9 +2,14 @@ import re
 import uuid
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
-
-from enums import EventStatus
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    EmailStr,
+    Field,
+    field_validator,
+    model_validator,
+)
 
 
 class PlaceBase(BaseModel):
@@ -32,7 +37,23 @@ class PlaceRead(PlaceBase):
     model_config = ConfigDict(from_attributes=True)
 
 
-# --- Event ---
+class PlaceShortRead(BaseModel):
+    id: uuid.UUID
+    name: str
+    city: str
+    address: str
+    model_config = ConfigDict(from_attributes=True)
+
+
+class PlaceDetailRead(BaseModel):
+    id: uuid.UUID
+    name: str
+    city: str
+    address: str
+    seats_pattern: str
+    model_config = ConfigDict(from_attributes=True)
+
+
 class EventBase(BaseModel):
     name: str = Field(..., min_length=1, max_length=255)
     event_time: datetime
@@ -51,7 +72,7 @@ class EventCreate(EventBase):
 
 class EventRead(EventBase):
     id: uuid.UUID
-    status: EventStatus
+    status: str
     number_of_visitors: int
     place_id: uuid.UUID
     changed_at: datetime
@@ -64,7 +85,62 @@ class EventWithPlaceRead(EventRead):
     place: PlaceRead
 
 
+class EventListItemRead(BaseModel):
+    id: uuid.UUID
+    name: str
+    place: PlaceShortRead
+    event_time: datetime
+    registration_deadline: datetime
+    status: str
+    number_of_visitors: int
+    model_config = ConfigDict(from_attributes=True)
+
+
+class EventDetailRead(BaseModel):
+    id: uuid.UUID
+    name: str
+    place: PlaceDetailRead
+    event_time: datetime
+    registration_deadline: datetime
+    status: str
+    number_of_visitors: int
+    model_config = ConfigDict(from_attributes=True)
+
+
 class PaginatedEvents(BaseModel):
     next: str | None
     previous: str | None
     results: list[EventWithPlaceRead]
+
+
+class SyncTriggerResponse(BaseModel):
+    status: str
+    message: str
+
+
+class PaginatedEventsPage(BaseModel):
+    count: int
+    next: str | None
+    previous: str | None
+    results: list[EventListItemRead]
+
+
+class SeatsResponse(BaseModel):
+    event_id: uuid.UUID
+    available_seats: list[str]
+
+
+class TicketCreate(BaseModel):
+    event_id: uuid.UUID
+    first_name: str = Field(..., min_length=1, max_length=100)
+    last_name: str = Field(..., min_length=1, max_length=100)
+    email: EmailStr
+    seat: str = Field(..., min_length=1, max_length=20)
+
+
+class TicketCreated(BaseModel):
+    ticket_id: uuid.UUID
+
+
+class TicketDeleted(BaseModel):
+    success: bool

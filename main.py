@@ -1,3 +1,5 @@
+import asyncio
+import logging
 import os
 from contextlib import asynccontextmanager
 
@@ -6,14 +8,33 @@ from fastapi import FastAPI
 
 from config import settings
 from database import Base, engine
-from routers import events, health, places
+from routers import events, health, places, sync, tickets
+from workers.sync_worker import sync_loop
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
+)
+logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+
+    task = asyncio.create_task(sync_loop())
+    logger.info("Background sync worker started")
+
     yield
+
+    task.cancel()
+    try:
+        await task
+    except asyncio.CancelledError:
+        pass
+    logger.info("Background sync worker stopped")
+
     await engine.dispose()
 
 
@@ -23,9 +44,11 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-app.include_router(places.router)
-app.include_router(events.router)
 app.include_router(health.router)
+app.include_router(sync.router)
+app.include_router(events.router)
+app.include_router(tickets.router)
+app.include_router(places.router)
 
 
 @app.get("/", tags=["root"])

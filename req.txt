@@ -3,7 +3,9 @@ uvicorn[standart]
 sqlalchemy[asyncio]
 asyncpg
 pydantic
+pydantic[email]
 pydantic-settings
 alembic
 python-dotenv
+httpx
 ruff==0.6.9
