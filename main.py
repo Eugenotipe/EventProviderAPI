@@ -5,6 +5,8 @@ from contextlib import asynccontextmanager
 
 import uvicorn
 from fastapi import FastAPI
+from fastapi.exceptions import RequestValidationError
+from fastapi.responses import JSONResponse
 
 from config import settings
 from database import Base, engine
@@ -54,6 +56,10 @@ app.include_router(tickets.router)
 @app.get("/", tags=["root"])
 async def read_root():
     return {"message": f"Hello from {settings.app_name}!"}
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request, exc):
+    return JSONResponse(status_code=400, content={"detail": exc.errors()})
 
 
 if __name__ == "__main__":
