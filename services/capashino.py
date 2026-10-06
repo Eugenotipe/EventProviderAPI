@@ -2,18 +2,20 @@ import httpx
 
 from config import settings
 
+
 class CapashinoError(Exception):
     def __init__(self, status_code: int, details: str):
         self.status_code = status_code
         self.details = details
         super().__init__(f"[{status_code}] {details}")
 
+
 class CapashinoClient:
     def __init__(
-            self,
-            base_url: str | None = None,
-            api_key: str | None = None,
-            timeout: float = 10.0,
+        self,
+        base_url: str | None = None,
+        api_key: str | None = None,
+        timeout: float = 10.0,
     ):
         self.base_url = (base_url or settings.capashino_url).rstrip("/")
         self.api_key = api_key or settings.capashino_api_key
@@ -27,7 +29,7 @@ class CapashinoClient:
                 "Content-Type": "application/json",
                 "Accept": "application/json",
             },
-            timeout=timeout
+            timeout=timeout,
         )
 
     async def __aenter__(self) -> "CapashinoClient":
@@ -40,14 +42,14 @@ class CapashinoClient:
         await self._client.aclose()
 
     async def send_notification(
-            self,
-            message: str,
-            reference_id: str,
-            idempotency_key: str,
+        self,
+        message: str,
+        reference_id: str,
+        idempotency_key: str,
     ) -> dict:
         response = await self._client.post(
             "/api/notifications",
-            json = {
+            json={
                 "message": message,
                 "reference_id": reference_id,
                 "idempotency_key": idempotency_key,

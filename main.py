@@ -11,8 +11,8 @@ from fastapi.responses import JSONResponse
 from config import settings
 from database import Base, engine
 from routers import events, health, sync, tickets
-from workers.sync_worker import sync_loop
 from workers.outbox_worker import outbox_loop
+from workers.sync_worker import sync_loop
 
 logging.basicConfig(
     level=logging.INFO,

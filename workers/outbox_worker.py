@@ -8,6 +8,7 @@ logger = logging.getLogger(__name__)
 OUTBOX_INTERVAL_SECONDS = 5
 OUTBOX_ERROR_SLEEP_SECONDS = 30
 
+
 async def outbox_loop() -> None:
     logger.info("Outbox worker started")
 

@@ -38,6 +38,7 @@ def _build_events_provider_url() -> str:
         )
     return "https://events-provider.dev-2.python-labs.ru"
 
+
 def _default_capashino_url() -> str:
     if os.environ.get("CAPASHINO_URL"):
         return os.environ["CAPASHINO_URL"]

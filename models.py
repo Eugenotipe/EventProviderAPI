@@ -3,7 +3,7 @@ from datetime import UTC, datetime
 
 from sqlalchemy import DateTime, ForeignKey, Index, Integer, String
 from sqlalchemy import Enum as SAEnum
-from sqlalchemy.dialects.postgresql import UUID, JSONB
+from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from database import Base
@@ -106,6 +106,7 @@ class Ticket(Base):
         Index("ix_tickets_email", "email"),
     )
 
+
 class Outbox(Base):
     __tablename__ = "outbox"
 
@@ -115,11 +116,13 @@ class Outbox(Base):
     event_type: Mapped[str] = mapped_column(String(100), nullable=False)
     payload: Mapped[dict] = mapped_column(JSONB, nullable=False)
     status: Mapped[str] = mapped_column(String(20), nullable=False, default="pending")
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=_now)
-    sent_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False, default=_now
+    )
+    sent_at: Mapped[datetime | None] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
     attempts: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     last_error: Mapped[str | None] = mapped_column(String(1000), nullable=True)
 
-    __table_args__ = (
-        Index("ix_outbox_status_created_at", "status", "created_at"),
-    )
+    __table_args__ = (Index("ix_outbox_status_created_at", "status", "created_at"),)

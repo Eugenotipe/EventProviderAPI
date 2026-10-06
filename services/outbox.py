@@ -13,6 +13,7 @@ logger = logging.getLogger(__name__)
 BATCH_SIZE = 50
 MAX_ATTEMPTS = 10
 
+
 async def _process_one(db: AsyncSession, entry: Outbox):
     payload = entry.payload
 
@@ -37,6 +38,7 @@ async def _process_one(db: AsyncSession, entry: Outbox):
         entry.attempts += 1
         entry.last_error = str(e)[:1000]
         logger.exception(f"Outbox {entry.id} unexpected error")
+
 
 async def process_batch(batch_size: int = BATCH_SIZE) -> int:
     async with AsyncSessionLocal() as db:

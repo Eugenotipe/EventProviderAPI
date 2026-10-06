@@ -1,12 +1,11 @@
 import uuid
-
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database import get_db
-from models import Event, Ticket, Outbox
+from models import Event, Outbox, Ticket
 from schemas import TicketCreate, TicketCreated, TicketDeleted
 from services.events_provider import EventsProviderClient, EventsProviderError
 from services.seats_cache import seats_cache
@@ -26,8 +25,6 @@ async def create_ticket(data: TicketCreate, db: AsyncSession = Depends(get_db)):
             status_code=status.HTTP_409_CONFLICT,
             detail=f"Registration is not available (status: {event.status})",
         )
-
-    from datetime import datetime, timezone
 
     if event.registration_deadline < datetime.now(tz=timezone.utc):
         raise HTTPException(
@@ -74,8 +71,7 @@ async def create_ticket(data: TicketCreate, db: AsyncSession = Depends(get_db)):
         )
 
     message = (
-        f"Вы успешно зарегестрированы на мероприятие - {event.name}. "
-        f"Место: {data.seat}"
+        f"Вы успешно зарегестрированы на мероприятие - {event.name}. Место: {data.seat}"
     )
     outbox_entry = Outbox(
         event_type="ticket_created",
@@ -84,7 +80,7 @@ async def create_ticket(data: TicketCreate, db: AsyncSession = Depends(get_db)):
             "reference_id": str(ticket_uuid),
             "idempotency_key": f"ticket-{ticket_uuid}",
         },
-        status="pending"
+        status="pending",
     )
     db.add(outbox_entry)
 
