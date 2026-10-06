@@ -38,15 +38,22 @@ def _build_events_provider_url() -> str:
         )
     return "https://events-provider.dev-2.python-labs.ru"
 
+def _default_capashino_url() -> str:
+    if os.environ.get("CAPASHINO_URL"):
+        return os.environ["CAPASHINO_URL"]
+    if os.environ.get("POSTGRES_CONNECTION_STRING"):
+        return "http://student-system-capashino-web.student-system-capashino.svc:8000"
+    return "https://capashino.dev-2.python-labs.ru"
+
 
 class Settings(BaseSettings):
     app_name: str = "LearnApp"
     database_url: str = _build_database_url()
     events_provider_url: str = _build_events_provider_url()
-    events_provider_api_key: str = os.environ.get(
-        "EVENTS_PROVIDER_API_KEY",
-        "ACjxaLfCG-_dOjNIKhvhA1e_-lPBlwcmnPyV1757QOA",
-    )
+    events_provider_api_key: str = os.environ.get("EVENTS_PROVIDER_API_KEY", "")
+
+    capashino_url: str = _default_capashino_url()
+    capashino_api_key: str = os.environ.get("CAPASHINO_API_KEY")
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 

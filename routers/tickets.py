@@ -1,10 +1,12 @@
 import uuid
 
+from datetime import datetime, timezone
+
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database import get_db
-from models import Event, Ticket
+from models import Event, Ticket, Outbox
 from schemas import TicketCreate, TicketCreated, TicketDeleted
 from services.events_provider import EventsProviderClient, EventsProviderError
 from services.seats_cache import seats_cache
@@ -70,6 +72,22 @@ async def create_ticket(data: TicketCreate, db: AsyncSession = Depends(get_db)):
                 seat=data.seat,
             )
         )
+
+    message = (
+        f"Вы успешно зарегестрированы на мероприятие - {event.name}. "
+        f"Место: {data.seat}"
+    )
+    outbox_entry = Outbox(
+        event_type="ticket_created",
+        payload={
+            "message": message,
+            "reference_id": str(ticket_uuid),
+            "idempotency_key": f"ticket-{ticket_uuid}",
+        },
+        status="pending"
+    )
+    db.add(outbox_entry)
+
     await db.commit()
 
     seats_cache.invalidate(str(data.event_id))

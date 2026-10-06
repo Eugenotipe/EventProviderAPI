@@ -12,6 +12,7 @@ from config import settings
 from database import Base, engine
 from routers import events, health, sync, tickets
 from workers.sync_worker import sync_loop
+from workers.outbox_worker import outbox_loop
 
 logging.basicConfig(
     level=logging.INFO,
@@ -25,16 +26,18 @@ async def lifespan(app: FastAPI):
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
-    task = asyncio.create_task(sync_loop())
+    outbox_task = asyncio.create_task(outbox_loop())
+    sync_task = asyncio.create_task(sync_loop())
     logger.info("Background sync worker started")
 
     yield
 
-    task.cancel()
-    try:
-        await task
-    except asyncio.CancelledError:
-        pass
+    for task in (sync_task, outbox_task):
+        task.cancel()
+        try:
+            await task
+        except asyncio.CancelledError:
+            pass
     logger.info("Background sync worker stopped")
 
     await engine.dispose()

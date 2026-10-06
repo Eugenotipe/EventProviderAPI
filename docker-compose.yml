@@ -21,6 +21,8 @@ services:
     container_name: eventprovider-app
     ports:
       - "8000:8000"
+    env_file:
+      - .env
     environment:
       DATABASE_URL: postgresql+asyncpg://eventprovider:secret@db:5432/eventprovider
       APP: EventProvider
