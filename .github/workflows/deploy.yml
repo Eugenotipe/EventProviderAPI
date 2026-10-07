@@ -63,6 +63,12 @@ jobs:
             type=ref,event=branch
             type=sha,prefix={{branch}}-
 
+      - name: Create .env file from secrets
+        run: |
+          cat > .env <<EOF
+          EVENTS_PROVIDER_API_KEY=${{ secrets.EVENTS_PROVIDER_API_KEY }}
+          CAPASHINO_API_KEY=${{ secrets.CAPASHINO_API_KEY }}
+          EOF
       - name: Build and push
         uses: docker/build-push-action@v6
         with:
