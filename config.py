@@ -54,7 +54,7 @@ class Settings(BaseSettings):
     events_provider_api_key: str = os.environ.get("EVENTS_PROVIDER_API_KEY", "")
 
     capashino_url: str = _default_capashino_url()
-    capashino_api_key: str = os.environ.get("CAPASHINO_API_KEY")
+    capashino_api_key: str = os.environ.get("CAPASHINO_API_KEY", "")
 
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
