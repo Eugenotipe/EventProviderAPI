@@ -9,3 +9,4 @@ alembic
 python-dotenv
 httpx
 ruff==0.6.9
+sentry-sdk[fastapi]
