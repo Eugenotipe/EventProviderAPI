@@ -126,3 +126,13 @@ class Outbox(Base):
     last_error: Mapped[str | None] = mapped_column(String(1000), nullable=True)
 
     __table_args__ = (Index("ix_outbox_status_created_at", "status", "created_at"),)
+
+
+class IdempotencyKey(Base):
+    __tablename__ = "idempotency_key"
+    key: Mapped[str] = mapped_column(String(255), primary_key=True)
+    request_hash: Mapped[str] = mapped_column(String(64), nullable=False)
+    ticket_id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=_now, nullable=False
+    )
